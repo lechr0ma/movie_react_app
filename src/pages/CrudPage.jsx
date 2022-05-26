@@ -41,7 +41,7 @@ const CrudPage = () => {
         ItemsService.deleteItem(item).then(res => dispatch({type:'DELETE', payload: res}))
     }
     const delayedSearch = useDelayed(query)
-    console.log(delayedSearch)
+
     useEffect(() =>{ ItemsService.fetchByQuery(delayedSearch).then(
         res => dispatch({type: 'FETCH', payload: res})
     )}
