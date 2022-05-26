@@ -108,12 +108,13 @@
 .item__content{
     display: flex;
     flex-direction: column;
+    min-width: calc(60% - 10px);
 }
 .item__options{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-width: calc(60% - 10px);
+    width: 100%;
 }
 .item__title-edit{
     font-size: 1rem;
