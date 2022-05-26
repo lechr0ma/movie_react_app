@@ -1,0 +1,46 @@
+.crud__container{
+    width: 70%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+}
+.crud__options{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.crud__media{
+    height: 28px;
+}
+.crud__list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+}
+.crud__item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(20% - 5px);
+    height: 80px;
+    padding: 5px;
+    border: 1px solid #4A8FE7;
+    cursor: pointer;
+}
+.crud__title{
+    max-width: 80%;
+}
+.item__container{
+    width: 50%;
+    height: 50%;
+    background: white;
+    border-radius: 20px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+}
