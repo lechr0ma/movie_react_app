@@ -5,8 +5,11 @@ import SearchInput from "./UI/SearchInput";
 import PurpleButton from "./UI/PurpleButton";
 import tmdbService from "../services/tmdbService";
 import CloseButton from "./UI/CloseButton";
+import {useDispatch} from "react-redux";
+import {getError, getLoading, loadingOK} from "../redux/mainSlice";
 
 const AddModal = ({dispatch, media, remove}) => {
+    const reduxDispatch = useDispatch()
     const [items, setItems] = useState([])
     const [totalPages, setTotal] = useState(null)
     const [query, setQuery] = useState({
@@ -15,10 +18,12 @@ const AddModal = ({dispatch, media, remove}) => {
         page: 1
     })
     const fetchItems = () => {
+        reduxDispatch(getLoading())
         tmdbService.fetchQuery(query).then(r => {
             setItems(r.results)
             setTotal(r.total_pages)
-        }).catch(e => alert(e.response.data.errors[0]))
+            reduxDispatch(loadingOK())
+        }).catch(e => reduxDispatch(getError(e.response.data.errors[0])))
     }
     const searchItems = () => {
         setQuery({...query, page: 1})

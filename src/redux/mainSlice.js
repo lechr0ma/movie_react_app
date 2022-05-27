@@ -2,7 +2,7 @@ import {createSlice} from "@reduxjs/toolkit";
 
 
 const initialState = {
-    isLoading: true,
+    isLoading: false,
     isError: false,
     error: '',
 }
@@ -14,6 +14,10 @@ const mainSlice = createSlice({
             state.isLoading = false
             state.isError = true
             state.error = action.payload
+        },
+        closeError: (state) => {
+            state.isError = false
+            state.error = ''
         },
         getLoading: (state) => {
             state.isLoading = true
@@ -27,5 +31,5 @@ const mainSlice = createSlice({
         }
     }
 })
-export const {fetchItems, fetchItemsOK, fetchItemsBad, getMoreItems, changeQuery} = mainSlice.actions
+export const {getError, getLoading, loadingOK, closeError} = mainSlice.actions
 export default mainSlice

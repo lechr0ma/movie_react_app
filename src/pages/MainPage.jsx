@@ -4,6 +4,8 @@ import SearchInput from "../components/UI/SearchInput";
 import MovieItem from "../components/MovieItem";
 import FilterModal from "../components/FilterModal";
 import ItemsService from "../services/itemsService";
+import {useDispatch} from "react-redux";
+import {getError, getLoading, loadingOK} from "../redux/mainSlice";
 
 
 const MainPage = () => {
@@ -24,34 +26,62 @@ const MainPage = () => {
     const [error, setError] = useState('')
     const cut = items && items.slice((page - 1) * pageSize, page * pageSize)
     const pagesCount = items && Math.ceil(items.length / pageSize)
-
+    const dispatch = useDispatch()
     const searchQuery = (text) => {
         setIsQuery(true)
         setQuery({...query, title: text, name: text})
     }
-
+    const writeItems = (data) => {
+        setItems(data)
+        setLoading(false)
+    }
+    const writeError = (error) => {
+        setError(error)
+        setLoading(false)
+    }
     //here with func
     const delayedQuery = () => {
         clearTimeout(timeoutID)
         const id = setTimeout(() => {
-            isQuery && ItemsService.fetchByQuery(query).then(res => {
+            dispatch(getLoading())
+            ItemsService.fetchByQuery(query).then(res => {
                 writeItems(res)
                 setPage(1)
-            })
+                dispatch(loadingOK())
+            }).catch(
+                e => dispatch(getError(e.message))
+            )
         }, 500)
         setID(id)
     }
-    const writeItems = (data) => {
-        setItems(data.data)
-        setError(data.error)
-        setLoading(false)
+    const trendyQuery = () => {
+        setLoading(true)
+        dispatch(getLoading())
+        ItemsService.fetchTrendy().then(
+            result => {
+                writeItems(result)
+                dispatch(loadingOK())
+            }
+        ).catch(e => {
+            dispatch(getError(e.message))
+            writeError(e.message)
+        })
     }
+
     const nextPage = () => {
         if (page === pagesCount - 1 && !isQuery) {
             const offset = pagesCount * pageSize
-            ItemsService.fetchMoreTrendy(offset).then(
-                result => setItems([...items, ...result.data])
-            )
+            dispatch(getLoading())
+            ItemsService.fetchMoreTrendy(offset)
+                .then(
+                    result => {
+                        setItems([...items, ...result])
+                        dispatch(loadingOK())
+                    }
+                )
+                .catch(
+                    e => dispatch(getError(e.message))
+                )
         }
         setPage(page + 1)
     }
@@ -63,14 +93,8 @@ const MainPage = () => {
         setModal(!modal)
     }
     useEffect(() => {
-        setLoading(true)
-        ItemsService.fetchTrendy().then(
-            result => {
-                writeItems(result)
-            }
-        )
-    }, [])
-    useEffect(() => delayedQuery(), [query])
+        isQuery ? delayedQuery() : trendyQuery()
+    }, [query])
     return (
         <div className='main'>
             {modal && <FilterModal
@@ -91,11 +115,11 @@ const MainPage = () => {
             {cut && <div className="main__content">
                 {cut.map(el => <MovieItem key={el.id} movie={el}/>)}
             </div>}
-            <div className="main__pagination">
+            {cut.length > 0 && <div className="main__pagination">
                 <PurpleButton disabled={page === 1} onClick={prevPage}>Prev</PurpleButton>
-                <span>Page {page}</span>
+                <span>Page {page} of {pagesCount}</span>
                 <PurpleButton disabled={page === pagesCount} onClick={nextPage}>Next</PurpleButton>
-            </div>
+            </div>}
         </div>
     );
 };

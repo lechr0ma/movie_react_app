@@ -1,14 +1,11 @@
-
-
-export const crudReducer = (state, action) =>{
-    switch (action.type){
+export const crudReducer = (state, action) => {
+    switch (action.type) {
         case 'FETCH':
             return {
                 isLoading: false,
-                data: action.payload.data,
-                error: action.payload.error
+                data: action.payload,
             }
-        case 'EDIT':{
+        case 'EDIT': {
             return {
                 ...state, data: state.data.map(e => e.id === action.payload.id ? action.payload : e)
             }

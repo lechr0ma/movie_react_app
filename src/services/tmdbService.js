@@ -12,4 +12,5 @@ class tmdbService {
         return response.data
     }
 }
+
 export default new tmdbService()

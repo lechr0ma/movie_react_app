@@ -7,14 +7,17 @@ import PurpleButton from "../components/UI/PurpleButton";
 import AddModal from "../components/AddModal";
 import ItemsService from "../services/itemsService";
 import useDelayed from "../hooks/useDelayed";
+import {useDispatch} from "react-redux";
+import {getError, getLoading, loadingOK} from "../redux/mainSlice";
 
 
 const initialState = {
     isLoading: true,
     data: [],
-    error:''
+    error: ''
 }
 const CrudPage = () => {
+    const reduxDispatch = useDispatch()
     const [state, dispatch] = useReducer(crudReducer, initialState)
     const [query, setQuery] = useState({
         media_type: 'movie',
@@ -23,6 +26,8 @@ const CrudPage = () => {
     })
     const [editModal, setEdit] = useState({isModal: false, modalItem: {}})
     const [addModal, setAdd] = useState(false)
+    //here with the hook
+    const delayedSearch = useDelayed(query)
     const getModal = (item) => {
         setEdit({
             isModal: true,
@@ -38,23 +43,41 @@ const CrudPage = () => {
         setAdd(false)
     }
     const removeItem = (item) => {
-        ItemsService.deleteItem(item).then(res => dispatch({type:'DELETE', payload: res}))
+        reduxDispatch(getLoading())
+        ItemsService.deleteItem(item)
+            .then(res => {
+                dispatch({type: 'DELETE', payload: res})
+                reduxDispatch(loadingOK())
+            })
+            .catch(e =>
+                reduxDispatch(getError(e.message))
+            )
     }
-    const delayedSearch = useDelayed(query)
 
-    useEffect(() =>{ ItemsService.fetchByQuery(delayedSearch).then(
-        res => dispatch({type: 'FETCH', payload: res})
-    )}
-    ,[delayedSearch])
+    useEffect(() => {
+            reduxDispatch(getLoading())
+            ItemsService.fetchByQuery(delayedSearch)
+                .then(
+                    res => {
+                        dispatch({type: 'FETCH', payload: res})
+                        reduxDispatch(loadingOK())
+                    })
+                .catch(e =>
+                    reduxDispatch(getError(e.message))
+                )
+        }
+        , [delayedSearch])
     return (
         <div className='crud__container'>
             {editModal.isModal && <EditModal remove={removeModal} dispatch={dispatch} item={editModal.modalItem}/>}
             {addModal && <AddModal remove={removeModal} dispatch={dispatch} media={query.media_type}/>}
             <div className="crud__options">
                 <h2>Search:</h2>
-                <SearchInput value={query.title} placeholder='Search' onChange={(e)=>setQuery({...query, title: e, name: e})}/>
+                <SearchInput value={query.title} placeholder='Search'
+                             onChange={(e) => setQuery({...query, title: e, name: e})}/>
                 <h2>Type: </h2>
-                <select onChange={event => setQuery({...query, media_type: event.target.value})} className='crud__media'>
+                <select onChange={event => setQuery({...query, media_type: event.target.value})}
+                        className='crud__media'>
                     <option value="movie">Movie</option>
                     <option value="tv">TV</option>
                 </select>
@@ -64,7 +87,7 @@ const CrudPage = () => {
             </div>
             {state.isLoading && <h2>Loading</h2>}
             {state.error && <h2>{state.error}</h2>}
-            {!state.data.length && !state.isLoading &&  <h2>No data</h2>}
+            {!state.data.length && !state.isLoading && <h2>No data</h2>}
             {state.data &&
                 <ul className="crud__list">
                     {state.data.map(e => <CrudItem remove={removeItem} onClick={getModal} key={e.id} item={e}/>)}
